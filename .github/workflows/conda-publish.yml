@@ -29,9 +29,6 @@ jobs:
           - subdir: osx-arm64
             runner: macos-15
             rattler_target: aarch64-apple-darwin
-          - subdir: osx-64
-            runner: macos-15-intel
-            rattler_target: x86_64-apple-darwin
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6 # kilocode_change
