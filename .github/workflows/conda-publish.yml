@@ -1,0 +1,74 @@
+name: conda-publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: conda-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RATTLER_BUILD_VERSION: "0.75.0"
+
+jobs:
+  build:
+    name: Build, validate, and publish conda package (${{ matrix.subdir }})
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - subdir: linux-64
+            runner: ubuntu-latest
+            rattler_target: x86_64-unknown-linux-musl
+          - subdir: osx-arm64
+            runner: macos-15
+            rattler_target: aarch64-apple-darwin
+          - subdir: osx-64
+            runner: macos-15-intel
+            rattler_target: x86_64-apple-darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6 # kilocode_change
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: ./.github/actions/setup-bun
+
+      - name: Install rattler-build
+        run: |
+          curl -fsSL -o /usr/local/bin/rattler-build \
+            "https://github.com/prefix-dev/rattler-build/releases/download/v${RATTLER_BUILD_VERSION}/rattler-build-${{ matrix.rattler_target }}"
+          chmod +x /usr/local/bin/rattler-build
+          rattler-build --version
+
+      - name: Build Kilo CLI binary
+        run: bun run build:conda:cli
+
+      - name: Build conda package
+        run: |
+          bun run script/with-version.ts \
+            rattler-build build --recipe conda.recipe --output-dir ./conda-dist --test skip
+
+      - name: Validate CLI (--help)
+        run: |
+          package=$(find ./conda-dist -name '*.conda' -print -quit)
+          if [ -z "$package" ]; then
+            echo "FAIL: no .conda package produced under ./conda-dist"
+            exit 1
+          fi
+          echo "Testing $package"
+          rattler-build test --package-file "$package" -c ./conda-dist -c conda-forge
+
+      - name: Upload to Anaconda.org
+        uses: anaconda/actions/upload-package@v0
+        with:
+          token: ${{ secrets.ANACONDA_ORG_TOKEN }}
+          channel: ${{ secrets.ANACONDA_ORG_USER }}
+          packages: ./conda-dist/${{ matrix.subdir }}/*.conda

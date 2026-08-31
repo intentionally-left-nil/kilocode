@@ -23,7 +23,9 @@
     "extension:isolated": "bun --cwd packages/kilo-vscode script/launch.ts --isolated",
     "extension:isolated:clean": "bun --cwd packages/kilo-vscode script/launch.ts --isolated --clean",
     "dev-setup": "bun run --cwd packages/opencode --conditions=browser src/index.ts dev-setup",
-    "dev:local": "bun run packages/opencode/script/dev-local.ts"
+    "dev:local": "bun run packages/opencode/script/dev-local.ts",
+    "build:conda:cli": "bun run script/with-version.ts bun run --cwd packages/opencode script/build.ts --single --skip-install",
+    "build:conda": "bun run build:conda:cli && bun run script/with-version.ts rattler-build build --recipe conda.recipe"
   },
   "workspaces": {
     "packages": [

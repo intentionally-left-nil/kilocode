@@ -1,0 +1,50 @@
+# Packages the Kilo CLI (packages/opencode) as a conda package.
+#
+# rattler-build does not run the Bun/TypeScript build itself here -- mirroring
+# how this org's other native-binary recipes (see anaconda-cli's
+# conda.recipe/) package an already-built release binary rather than
+# compiling inside the sandboxed build environment. Produce the binary first:
+#
+#   bun run script/with-version.ts bun run --cwd packages/opencode script/build.ts --single --skip-install
+#
+# then build the package with:
+#
+#   bun run script/with-version.ts rattler-build build --recipe conda.recipe
+package:
+  name: kilo
+  version: ${{ env.get("PKG_VERSION") | default("0.0.0") }}
+
+source:
+  path: ..
+
+build:
+  # Bumped per CI run (see script/with-version.ts) so every push to main
+  # produces a new, uploadable build of the same CLI version instead of
+  # colliding with the previous publish. Defaults to 0 for local builds.
+  number: ${{ env.get("PKG_BUILD_NUMBER") | default("0") }}
+  skip:
+    - win
+
+requirements:
+  run:
+    - ripgrep
+
+tests:
+  - script:
+      - kilo --version
+      - kilo --help
+
+about:
+  homepage: https://kilo.ai
+  repository: https://github.com/Kilo-Org/kilocode
+  documentation: https://kilo.ai/docs
+  license: MIT
+  license_file: LICENSE
+  summary: Kilo Code - AI coding agent CLI
+  description: |
+    Kilo Code is an open-source AI coding agent that helps developers
+    build and ship code faster. This package builds the CLI from source.
+
+extra:
+  recipe-maintainers:
+    - Kilo-Org
