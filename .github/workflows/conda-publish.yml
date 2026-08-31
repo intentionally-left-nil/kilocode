@@ -67,7 +67,7 @@ jobs:
           rattler-build test --package-file "$package" -c ./conda-dist -c conda-forge
 
       - name: Upload to Anaconda.org
-        uses: anaconda/actions/upload-package@v0
+        uses: anaconda/actions/upload-package@v0.3.1
         with:
           token: ${{ secrets.ANACONDA_ORG_TOKEN }}
           channel: ${{ secrets.ANACONDA_ORG_USER }}
