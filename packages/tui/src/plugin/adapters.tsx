@@ -68,6 +68,7 @@ function routeCurrent(route: ReturnType<typeof useRoute>): TuiPluginApi["route"]
 
   // kilocode_change start
   if (route.data.type === "kiloclaw") return { name: "kiloclaw" }
+  if (route.data.type === "ana") return { name: "ana" }
   // kilocode_change end
 
   return {

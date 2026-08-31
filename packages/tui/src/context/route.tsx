@@ -18,6 +18,10 @@ export type SessionRoute = {
 export type KiloClawRoute = {
   type: "kiloclaw"
 }
+
+export type AnaRoute = {
+  type: "ana"
+}
 // kilocode_change end
 
 export type PluginRoute = {
@@ -26,7 +30,7 @@ export type PluginRoute = {
   data?: Record<string, unknown>
 }
 
-export type Route = HomeRoute | SessionRoute | PluginRoute | KiloClawRoute // kilocode_change
+export type Route = HomeRoute | SessionRoute | PluginRoute | KiloClawRoute | AnaRoute // kilocode_change
 
 export const { use: useRoute, provider: RouteProvider } = createSimpleContext({
   name: "Route",

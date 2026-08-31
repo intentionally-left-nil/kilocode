@@ -12,6 +12,7 @@ import * as Clipboard from "@tui/clipboard"
 import { useBindings } from "@tui/keymap"
 import { useSDK } from "@tui/context/sdk"
 import { useSync } from "@tui/context/sync"
+import { useRoute } from "@tui/context/route"
 import { useDialog } from "@tui/ui/dialog"
 import { useToast } from "@tui/ui/toast"
 import { useTheme } from "@tui/context/theme"
@@ -29,6 +30,7 @@ import { Session as SessionApi } from "@/session/session"
 
 // Re-export so upstream can render the route without importing directly
 export { KiloClawView } from "@/kilocode/claw/view"
+export { AnaView } from "@/kilocode/ana/view"
 export { KiloTerminalTitle } from "./terminal-title"
 
 // Hot reload TUI-local settings (keybinds/theme/ui) when changed from the Kilo Console.
@@ -204,6 +206,14 @@ export function getTerminalTitle(input: {
       indicator: "none",
     }
   }
+
+  if (input.route.data.type === "ana") {
+    return {
+      title: KiloTerminalTitle.format({ base: input.base, title: "Ana", indicator: "none", icon: input.icon }),
+      active: false,
+      indicator: "none",
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -238,6 +248,7 @@ export function init() {
   const sdk = useSDK()
   const toast = useToast()
   const dialog = useDialog()
+  const route = useRoute()
 
   useIndexingWarnings()
 
@@ -262,6 +273,18 @@ export function init() {
   // Register auto-approve toggle
   useBindings(() => ({
     commands: [
+      {
+        namespace: "palette",
+        name: "ana.switch",
+        title: "Switch to Ana",
+        desc: "Switch into the Ana (agentic Python package manager) UI",
+        category: "Kilo",
+        slashName: "ana",
+        run: () => {
+          dialog.clear()
+          route.navigate({ type: "ana" })
+        },
+      },
       {
         namespace: "palette",
         name: "background_process.list",
