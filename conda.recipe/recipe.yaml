@@ -24,6 +24,17 @@ build:
   number: ${{ env.get("PKG_BUILD_NUMBER") | default("0") }}
   skip:
     - win
+  dynamic_linking:
+    # `kilo` is a prebuilt Bun single-file executable, not a normal ELF binary
+    # linked against libs in this recipe -- its interpreter is already patched
+    # in script/build.ts (patchelf on Linux) to point at the system loader.
+    # rattler-build's default binary_relocation: true reruns patchelf/
+    # install_name_tool on every installed binary to rewrite prefixes, which
+    # corrupts Bun's embedded module data on Linux (segfaults on launch, see
+    # `kilo --version` failing with SIGSEGV during `rattler-build test`).
+    # Nothing in this package needs prefix-relative RPATH rewriting, so
+    # disable relocation entirely rather than trying to glob-exclude `kilo`.
+    binary_relocation: false
 
 requirements:
   run:
